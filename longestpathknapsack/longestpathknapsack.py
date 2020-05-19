@@ -6,10 +6,30 @@ def solve(a, p, b):
     items = range(nitems)
 
     # TODO: Generate vertices and arcs ----------------------------------------
-    vertices = []  # Vertices are named (i,j), see lecture
-    arcs = []  # List of tuples, i.e. [((i,j), (k,l),w), ((k,l), (u,v),0)]
-    # ------------------------------------------------------------------------
+    vertices = [(i, j) for i in range(b) for j in items]  # Vertices are named (i,j), see lecture
 
+    arcs = []  # List of tuples, i.e. [((i,j), (k,l),w), ((k,l), (u,v),0)]
+
+    # skip arcs
+    for j in range(1, nitems):
+        for i in range(b):
+            arcs.append((i,j-1,i,j,0))
+
+    # waste arcs
+    for j in items:
+        for i in range(b-1):
+            arcs.append((i,j,i+1,j,1))
+
+    # items arcs
+    for j in range(1, nitems):
+        for i in range(b-a[j]):
+            arcs.append((i, j-1, i+a[j],j, a[j]))
+
+    # ------------------------------------------------------------------------
+    arcs = tuplelist(arcs)
+
+    print(arcs)
+    print(arcs_1)
     # Model
     model = Model("Flowbased knapsack")
     model.modelSense = GRB.MAXIMIZE

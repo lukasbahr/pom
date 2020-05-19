@@ -1,0 +1,6 @@
+a:b:{'weight': 0.6}
+a:c:{'weight': 0.2}
+a:d:{'weight': 0.3}
+c:d:{'weight': 0.1}
+c:e:{'weight': 0.7}
+c:f:{'weight': 0.9}
