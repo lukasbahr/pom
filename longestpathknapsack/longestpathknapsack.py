@@ -10,40 +10,23 @@ def solve(a, p, b):
 
     arcs = []  # List of tuples, i.e. [((i,j), (k,l),w), ((k,l), (u,v),0)]
 
+    for i in range(1, nitems+1):
     # skip arcs
-    for j in range(1, nitems):
-        for i in range(b):
-            arcs.append((i,j-1,i,j,0))
-
-    # waste arcs
-    for j in items:
-        for i in range(b-1):
-            arcs.append((i,j,i+1,j,1))
+        for c in range(b+1):
+            arcs.append((c, i-1, c, i, 0))
 
     # items arcs
-    for j in range(1, nitems):
-        for i in range(b-a[j]):
-            arcs.append((i, j-1, i+a[j],j, a[j]))
+        for c in range(b+1-a[i-1]):
+            arcs.append((c, i-1, c+a[i-1], i, p[i-1]))
 
-   #  # skip arcs
-    #  for j in range(1, nitems):
-    #      for i in range(b):
-    #          arcs.append(((i,j-1),(i,j),0))
-    #
-    #  # waste arcs
-    #  for j in items:
-    #      for i in range(b-1):
-    #          arcs.append(((i,j),(i+1,j),1))
-    #
-    #  # items arcs
-    #  for j in range(1, nitems):
-    #      for i in range(b-a[j]):
-    #          arcs.append(((i, j-1), (i+a[j],j), a[j]))
-#
+    # waste arcs
+    for i in range(nitems+1):
+        for c in range(b):
+            arcs.append((c, i, c+1, i, 0))
+
     # ------------------------------------------------------------------------
     arcs = tuplelist(arcs)
 
-    print(arcs)
     # Model
     model = Model("Flowbased knapsack")
     model.modelSense = GRB.MAXIMIZE
@@ -63,25 +46,26 @@ def solve(a, p, b):
     model.update()
 
     # TODO: Add your constraints ----------------------------------------------
+
     s = (0,0)
     t = (b,nitems)
 
     for arc in arcs:
-            print(arcs.select('*', arc[0,2]))
             # right hand side
             rhs = 0
             if arc[0:2] == s:
                 rhs = 1
             if arc[0:2] == t:
                 rhs = -1
+
             # now the flow balance
             model.addConstr(
                 # outgoing edges
-                quicksum(x[(arc[0:2],j)] for j in list(t[1] for t in
-                    arcs.select(arc[0:2],'*'))) -
+                quicksum(x[(arc[0:2], j)] for j in list(t[2:4] for t in
+                    arcs.select(arc[0], arc[1],'*', '*'))) -
                 # incoming edges
-                quicksum(x[(j,arc[0:2])] for j in list(t[0] for t in
-                    arcs.select('*',arc[0,2])))
+                quicksum(x[(j, arc[0:2])] for j in list(t[0:2] for t in
+                    arcs.select('*', '*', arc[0], arc[1])))
                 == rhs, name="flow_"+str(i)
                 )
 
@@ -89,7 +73,7 @@ def solve(a, p, b):
 
     model.update()
     # For debugging: print your model
-    # model.write('model.lp')
+    #  model.write('model.lp')
     model.optimize()
 
     # Printing solution and objective value
@@ -98,7 +82,7 @@ def solve(a, p, b):
             print('\n objective: %g\n' % model.ObjVal)
             print("Selected following arcs:")
             for arc in arcs:
-                if x[(arc[0], arc[1])].x == 1:
+                if x[(arc[0:2], arc[2:4])].x == 1:
                     print(arc)
         else:
             raise Exception("No solution!")
