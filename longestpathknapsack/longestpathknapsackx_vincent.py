@@ -58,7 +58,7 @@ nitems = len(p)
 
     model.update()
     # For debugging: print your model
-    # model.write('model.lp')
+    model.write('model_1.lp')
     model.optimize()
 
     # Printing solution and objective value

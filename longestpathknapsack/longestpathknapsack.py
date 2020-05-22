@@ -46,34 +46,37 @@ def solve(a, p, b):
     model.update()
 
     # TODO: Add your constraints ----------------------------------------------
+    # flow conversation
+
+    idx = 0
 
     s = (0,0)
     t = (b,nitems)
 
     for arc in arcs:
-            # right hand side
             rhs = 0
             if arc[0:2] == s:
                 rhs = 1
             if arc[0:2] == t:
                 rhs = -1
 
-            # now the flow balance
             model.addConstr(
-                # outgoing edges
+
                 quicksum(x[(arc[0:2], j)] for j in list(t[2:4] for t in
                     arcs.select(arc[0], arc[1],'*', '*'))) -
-                # incoming edges
+
                 quicksum(x[(j, arc[0:2])] for j in list(t[0:2] for t in
                     arcs.select('*', '*', arc[0], arc[1])))
-                == rhs, name="flow_"+str(i)
+                == rhs, name="flow_"+str(idx)
                 )
+
+            idx+=1
 
     # -------------------------------------------------------------------------
 
     model.update()
     # For debugging: print your model
-    #  model.write('model.lp')
+    model.write('model.lp')
     model.optimize()
 
     # Printing solution and objective value
