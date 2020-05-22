@@ -6,7 +6,7 @@ def solve(a, p, b):
     items = range(nitems)
 
     # TODO: Generate vertices and arcs ----------------------------------------
-    vertices = [(i, j) for i in range(b) for j in items]  # Vertices are named (i,j), see lecture
+    vertices = [(c, i) for c in range(b+1) for i in range(nitems+1)]  # Vertices are named (i,j), see lecture
 
     arcs = []  # List of tuples, i.e. [((i,j), (k,l),w), ((k,l), (u,v),0)]
 
