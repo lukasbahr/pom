@@ -27,7 +27,7 @@ def solve(m, a, b):
 
     for j in range(m):
         model.addConstr(quicksum(x[i,j]*a[i] for i in range(len(a)))
-                <= b)
+                <= b * y[j])
 
     for i in range(len(a)):
         model.addConstr(quicksum(x[i,j] for j in range(m)) == 1)
