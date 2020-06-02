@@ -34,6 +34,9 @@ def solve(m, a, b):
 
     model.addConstr(C >= 0)
 
+    # second task on makescheduling
+    model.addConstr(C <= 70)
+
 
     model.setObjective(C,GRB.MINIMIZE)
     model.ModelSense = GRB.MINIMIZE
