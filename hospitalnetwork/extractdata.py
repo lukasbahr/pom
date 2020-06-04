@@ -12,7 +12,7 @@ def getHospitalData(full_instance_path):
             coord - coordinates [[x_y_h_coordinates], [x_y_c_coordinates]]
             c - cost [[costk1], [costk2], [costk3]]
             b - capacity [[capk1], [capk2], [capk3]]
-            g - closing income {'existing_hospital': closing_income}
+            closingIncome - closing income {'existing_hospital': closing_income}
             min_size_2 - cities with minimum hospital size 2 [cities]
     """
 
@@ -21,7 +21,7 @@ def getHospitalData(full_instance_path):
     h_coord, c_coord = []
     c = [[],[],[]]
     b = [[],[],[]]
-    g = {}
+    closingIncome = []
     minSize2 = []
 
     skipString = {'# hospitals: loc_id', '# existing hospitals: loc_id', '# cities: loc_id', '# cities with minimum hospital size 2: loc_id'}
@@ -54,8 +54,12 @@ def getHospitalData(full_instance_path):
         b[1].append(int(entry[7]))
         b[2].append(int(entry[8]))
 
-    for entry in existingHospitalData:
-        g[entry[0]] = entry[1]
+    for idx in range(len(hospitals)):
+        for entry in existingHospitalData:
+            if int(entry[0].strip('c')) == idx:
+                closingIncome.append(entry(1))
+            else:
+                closingIncome.append(0)
 
     for entry in cityData:
         cities.append(entry[0])
