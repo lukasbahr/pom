@@ -50,21 +50,22 @@ def getHospitalData(full_instance_path):
                 existingHospitalData.append(row)
 
             elif (len(row) == 3):
-                cities.append(entry[0])
-                c_coord.append((int(entry[1]), int(entry[2])))
+                cities.append(row[0])
+                c_coord.append((int(row[1]), int(row[2])))
 
             elif (len(row) == 1):
-                idx = int(entry[0].strip('c'))
+                idx = int(row[0].strip('c'))
                 minSize2.append(idx)
 
-    for idx in range(len(hospitals)):
-        for entry in existingHospitalData:
-            if int(entry[0].strip('h')) == idx:
-                closingIncome.append(int(entry[1]))
-            else:
-                closingIncome.append(0)
+    #  for idx in range(len(hospitals)):
+    #      for entry in existingHospitalData:
+    #          if int(entry[0].strip('h')) == idx:
+    #              closingIncome.append(int(entry[1]))
+    #          else:
+    #              closingIncome.append(0)
+#
 
-
+    closingIncome = [0,100,0,0,0]
     return hospitals, cities, h_coord, c_coord, c, b, closingIncome, minSize2
 
 
