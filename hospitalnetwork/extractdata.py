@@ -55,7 +55,7 @@ def getHospitalData(full_instance_path):
 
             elif (len(row) == 1):
                 idx = int(row[0].strip('c'))
-                minSize2.append(idx)
+                minSize2.append(idx-1)
 
     #  for idx in range(len(hospitals)):
     #      for entry in existingHospitalData:
