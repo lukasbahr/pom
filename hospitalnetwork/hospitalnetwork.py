@@ -59,15 +59,7 @@ def solve(full_instance_path):
     for j in range(len(hospitals)):
         for i in range(len(cities)):
             if (j,i) not in outOfRange:
-                model.addConstr(math.sqrt((c_coord[i][0]-h_coord[j][0])**2+(c_coord[i][1]-h_coord[j][1])**2)*x[j,i]
-                        <= 20*quicksum(a[j,k] for k in range(0,2)))
-
-    # Size 3 hospitals may also serve cities 30km away.
-    for j in range(len(hospitals)):
-        for i in range(len(cities)):
-            if (j,i) not in outOfRange:
-                k = 2
-                model.addConstr(math.sqrt((c_coord[i][0]-h_coord[j][0])**2+(c_coord[i][1]-h_coord[j][1])**2)*x[j,i] <= 30*a[j,k])
+                model.addConstr(math.sqrt((c_coord[i][0]-h_coord[j][0])**2+(c_coord[i][1]-h_coord[j][1])**2)*x[j,i] <= 20*a[j,0] + 20*a[j,1] + 30*a[j,2])
 
     # The number of cities assigned to a hospital may not exceed the capacity limit	of the hospital at its specific size
     for j in range(len(hospitals)):
@@ -90,9 +82,8 @@ def solve(full_instance_path):
     # -----------------------------------------------------------------------
 
     # Set function to optimize and mode to minimize
-    model.setObjective((quicksum(x[j,i]*costk[k][j] for i in
-        range(len(cities)) for j in range(len(hospitals)) if
-        (j,i) not in outOfRange) - quicksum(x[j,i]*closing_income[j] for i in range(len(cities))for j in
+    model.setObjective((quicksum(costk[k][j]*a[j,k] for k in range(3) for j in range(len(hospitals)) if
+        (j,i) not in outOfRange) - quicksum((1-quicksum(a[j,k] for k in range(3)))*closing_income[j] for j in
             range(len(hospitals)) if (j,i) not in outOfRange)), GRB.MINIMIZE)
 
     model.update()
