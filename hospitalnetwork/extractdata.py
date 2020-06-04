@@ -18,7 +18,8 @@ def getHospitalData(full_instance_path):
 
     hospitals = []
     cities = []
-    h_coord, c_coord = []
+    h_coord = []
+    c_coord = []
     c = [[],[],[]]
     b = [[],[],[]]
     closingIncome = []
@@ -56,8 +57,8 @@ def getHospitalData(full_instance_path):
 
     for idx in range(len(hospitals)):
         for entry in existingHospitalData:
-            if int(entry[0].strip('c')) == idx:
-                closingIncome.append(entry(1))
+            if int(entry[0].strip('h')) == idx:
+                closingIncome.append(int(entry[1]))
             else:
                 closingIncome.append(0)
 
@@ -70,6 +71,6 @@ def getHospitalData(full_instance_path):
         minSize2.append(idx)
 
 
-    return hospitals, cities, h_coord, c_coord, c, b, g, minSize2
+    return hospitals, cities, h_coord, c_coord, c, b, closingIncome, minSize2
 
 
