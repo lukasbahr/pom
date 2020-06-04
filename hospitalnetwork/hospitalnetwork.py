@@ -4,7 +4,7 @@ import extractdata
 
 def solve(full_instance_path):
 
-    hospitals, cities, h_coord, c_coord, c, b, g, minSize2 = extractdata.getHospitalData(full_instance_path)
+    hospitals, cities, h_coord, c_coord, costk, capk, closing_income, cities_sp = extractdata.getHospitalData(full_instance_path)
 
     model = Model("Hospital NetwORk")
 
@@ -12,12 +12,16 @@ def solve(full_instance_path):
     x = {}
     for j in hospitals:
         for i in cities:
-            x[j,i] = model.addVar(vtype='b', name="x_%s_%s" % (j,i))
+        	dist = sqrt((c_coord[i][0]-h_coord[j][0])^2+(c_coord[i][1]-h_coord[j][1])^2)
+        	if dist > 30:
+        		continue
+        	else:
+            	x[j,i] = model.addVar(vtype='b', name="x_%s_%s" % (j,i))
 
   	# Decision variavle a_j_k indicates wether hostpital j is built to size k (value = 1) or not (valute = 0).
     a = {}
-    for j in hospitals
-    	for k in range(1,4)
+    for j in hospitals:
+    	for k in range(1,4):
     		a[j,k] = model.addVar(vtype='b', name="a_%s_%s" % (j,k))
 
 
@@ -27,31 +31,31 @@ def solve(full_instance_path):
     # Add the linear constraints of the model.
 
     #Every city musst recieve service of exactly one hospital.
-    for i in cities
+    for i in cities:
     		model.addConstr(quicksum(x[j,i] for j in hospitals == 1))
 
     # Hospitals of size 1 and 2 may only serve cities in a 20km radius.
-    for j in hospitals
-    	for i in cities
-    		for k in range(1,4)
-    		model.addConstr(sqrt((c_coord(i,1)-h_coord(j,1))^2+(c_coord(i,2)-h_coord(j,2))^2)*x[i,j]*a[j,k] <= 20)
+    for j in hospitals:
+    	for i in cities:
+    		for k in range(1,4):
+    		model.addConstr(sqrt((c_coord[i][0]-h_coord[j][0])^2+(c_coord[i][1]-h_coord[j][1])^2)*x[i,j]*a[j,k] <= 20)
 
     # Size 3 hospitals may also serve cities 30km away.
-	for j in hospitals
-		for i in cities
-			for k in range(3,4)
+	for j in hospitals:
+		for i in cities:
+			k = 3
 			model.addConstr(sqrt((c_coord(i,1)-h_coord(j,1))^2+(c_coord(i,2)-h_coord(j,2))^2)*x[i,j]*a[j,k] <= 30)
 
 	# Every hospital needs to be assigned a size of 1,2 or 3.		
-	for j in hospitals
+	for j in hospitals:
 		model.addConstr(quicksum(a[j,k] for k in range(1,4) == 1))
 
 	# The number of cities assigned to a hospital may not exceed the capacity limit	of the hospital at its specific size
-	for j in hospitals
+	for j in hospitals:
 		model.addConstr(quicksum(x[i,j] for i in cities) <= quicksum(capk[j,k]*a[j,k] for k in range(1,4)))
 
 	# Cities with special needs must be served by at least a size 2 hospital.
-	for i in cities_sp
+	for i in cities_sp:
 		model.addConstr(quicksum(x[i,j] * a[j,k] for j in hospitals for k in range(2,4)) == 1)
 
 	# Set function to optimize and mode to minimize
