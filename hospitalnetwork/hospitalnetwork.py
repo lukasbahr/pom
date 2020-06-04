@@ -7,6 +7,20 @@ def solve(full_instance_path):
 
     hospitals, cities, h_coord, c_coord, costk, capk, closing_income, cities_sp = extractdata.getHospitalData(full_instance_path)
 
+    print(hospitals)
+    print(cities)
+    print(h_coord)
+    print(c_coord)
+    print(costk)
+    print(capk)
+    print(closing_income)
+    print(cities_sp)
+
+
+    # -----------------------------------------------------------------------
+    # Initiliaze model
+    # -----------------------------------------------------------------------
+
     model = Model("Hospital NetwORk")
 
     # Decision variable x_i_j indicates whether city i is allocated hospital j (value 1) or not (value 0).
@@ -32,6 +46,10 @@ def solve(full_instance_path):
 
     # Add the linear constraints of the model.
 
+    # -----------------------------------------------------------------------
+    # Add constraints
+    # -----------------------------------------------------------------------
+
     #Every city musst recieve service of exactly one hospital.
     for i in range(len(cities)):
         model.addConstr(quicksum(x[j,i] for j in range(len(hospitals)) if (j,i)
@@ -51,11 +69,6 @@ def solve(full_instance_path):
                 k = 2
                 model.addConstr(math.sqrt((c_coord[i][0]-h_coord[j][0])**2+(c_coord[i][1]-h_coord[j][1])**2)*x[j,i] <= 30*a[j,k])
 
-    # Every hospital needs to be assigned a size of 1,2 or 3.
-    #for j in range(len(hospitals)):
-        #model.addConstr(quicksum(a[j,k] for k in range(1,4) == 1))
-
-
     # The number of cities assigned to a hospital may not exceed the capacity limit	of the hospital at its specific size
     for j in range(len(hospitals)):
         model.addConstr(quicksum(x[j,i] for i in range(len(cities)) if (j,i)
@@ -71,16 +84,22 @@ def solve(full_instance_path):
     for j in range(len(hospitals)):
         model.addConstr(quicksum(a[j,k] for k in range(3)) <= 1)
 
-    print(closing_income)
+
+    # -----------------------------------------------------------------------
+    # Set objective and solve model
+    # -----------------------------------------------------------------------
+
     # Set function to optimize and mode to minimize
-    model.setObjective(quicksum(x[j,i]*costk[k][j] for i in
+    model.setObjective((quicksum(x[j,i]*costk[k][j] for i in
         range(len(cities)) for j in range(len(hospitals)) if
         (j,i) not in outOfRange) - quicksum(x[j,i]*closing_income[j] for i in range(len(cities))for j in
-            range(len(hospitals)) if (j,i) not in outOfRange), GRB.MINIMIZE)
+            range(len(hospitals)) if (j,i) not in outOfRange)), GRB.MINIMIZE)
+
+    model.update()
+    model.write('model.lp')
 
     # Solve
     model.optimize()
-
 
     return model
 
