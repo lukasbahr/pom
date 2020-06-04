@@ -82,9 +82,7 @@ def solve(full_instance_path):
     # -----------------------------------------------------------------------
 
     # Set function to optimize and mode to minimize
-    model.setObjective((quicksum(costk[k][j]*a[j,k] for k in range(3) for j in range(len(hospitals)) if
-        (j,i) not in outOfRange) - quicksum((1-quicksum(a[j,k] for k in range(3)))*closing_income[j] for j in
-            range(len(hospitals)) if (j,i) not in outOfRange)), GRB.MINIMIZE)
+    model.setObjective((quicksum(costk[k][j]*a[j,k] for k in range(3) for j in range(len(hospitals)) ) - quicksum((1-quicksum(a[j,k] for k in range(3)))*closing_income[j] for j in range(len(hospitals)))), GRB.MINIMIZE)
 
     model.update()
     model.write('model.lp')
