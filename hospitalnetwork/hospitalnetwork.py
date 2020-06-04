@@ -32,13 +32,13 @@ def solve(full_instance_path):
             if dist > 30:
                 outOfRange.append((j,i))
             else:
-                x[j,i] = model.addVar(vtype='b', name="x_%s_%s" % (j,i))
+                x[j,i] = model.addVar(vtype='b', name="x_h%s_c%s" % (j+1,i+1))
 
     # Decision variavle a_j_k indicates wether hostpital j is built to size k (value = 1) or not (valute = 0).
     a = {}
     for j in range(len(hospitals)):
         for k in range(3):
-            a[j,k] = model.addVar(vtype='b', name="a_%s_%s" % (j,k))
+            a[j,k] = model.addVar(vtype='b', name="a_h%s_k%s" % (j+1,k+1))
 
 
     # Update the model to make variables known. From now on, no variables should be added.
