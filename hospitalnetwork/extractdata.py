@@ -7,15 +7,18 @@ def getHospitalData(full_instance_path):
     input: path to csv file containing hospital network data
     output: hospitals - name of hospitals
             cities - name of cities
+            h_coord - hospital coordinates
+            c_coord - city coordinates
             coord - coordinates [[x_y_h_coordinates], [x_y_c_coordinates]]
             c - cost [[costk1], [costk2], [costk3]]
             b - capacity [[capk1], [capk2], [capk3]]
             g - closing income {'existing_hospital': closing_income}
             min_size_2 - cities with minimum hospital size 2 [cities]
     """
+
     hospitals = []
     cities = []
-    coord = [[],[]]
+    h_coord, c_coord = []
     c = [[],[],[]]
     b = [[],[],[]]
     g = {}
@@ -43,7 +46,7 @@ def getHospitalData(full_instance_path):
 
     for entry in hospitalData:
         hospitals.append(entry[0])
-        coord[0].append((int(entry[1]), int(entry[2])))
+        h_coord.append((int(entry[1]), int(entry[2])))
         c[0].append(int(entry[3]))
         c[1].append(int(entry[4]))
         c[2].append(int(entry[5]))
@@ -56,13 +59,13 @@ def getHospitalData(full_instance_path):
 
     for entry in cityData:
         cities.append(entry[0])
-        coord[1].append((int(entry[1]), int(entry[2])))
+        c_coord.append((int(entry[1]), int(entry[2])))
 
     for entry in cityMinData:
         idx = int(entry[0].strip('c'))
         minSize2.append(idx)
 
 
-    return hospitals, cities, coord, c, b, g, minSize2
+    return hospitals, cities, h_coord, c_coord, c, b, g, minSize2
 
 

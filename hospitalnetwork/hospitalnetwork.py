@@ -4,7 +4,7 @@ import extractdata
 
 def solve(full_instance_path):
 
-    hospitals, cities, coord, c, b, g, minSize2 = extractdata.getHospitalData(full_instance_path)
+    hospitals, cities, h_coord, c_coord, c, b, g, minSize2 = extractdata.getHospitalData(full_instance_path)
 
     model = Model("Hospital NetwORk")
 
