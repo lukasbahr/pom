@@ -16,7 +16,7 @@ def solve(full_instance_path):
         	if dist > 30:
         		continue
         	else:
-            	x[j,i] = model.addVar(vtype='b', name="x_%s_%s" % (j,i))
+        		x[j,i] = model.addVar(vtype='b', name="x_%s_%s" % (j,i))
 
   	# Decision variavle a_j_k indicates wether hostpital j is built to size k (value = 1) or not (valute = 0).
     a = {}
@@ -38,33 +38,33 @@ def solve(full_instance_path):
     for j in hospitals:
     	for i in cities:
     		for k in range(1,4):
-    		model.addConstr(sqrt((c_coord[i][0]-h_coord[j][0])^2+(c_coord[i][1]-h_coord[j][1])^2)*x[i,j]*a[j,k] <= 20)
+    			model.addConstr(sqrt((c_coord[i][0]-h_coord[j][0])^2+(c_coord[i][1]-h_coord[j][1])^2)*x[j,i]*a[j,k] <= 20)
 
     # Size 3 hospitals may also serve cities 30km away.
-	for j in hospitals:
-		for i in cities:
-			k = 3
-			model.addConstr(sqrt((c_coord(i,1)-h_coord(j,1))^2+(c_coord(i,2)-h_coord(j,2))^2)*x[i,j]*a[j,k] <= 30)
+    for j in hospitals:
+    	for i in cities:
+    		k = 3
+    		model.addConstr(sqrt((c_coord(i,1)-h_coord(j,1))^2+(c_coord(i,2)-h_coord(j,2))^2)*x[j,i]*a[j,k] <= 30)
 
-	# Every hospital needs to be assigned a size of 1,2 or 3.		
+    # Every hospital needs to be assigned a size of 1,2 or 3.
 	for j in hospitals:
 		model.addConstr(quicksum(a[j,k] for k in range(1,4) == 1))
 
 	# The number of cities assigned to a hospital may not exceed the capacity limit	of the hospital at its specific size
 	for j in hospitals:
-		model.addConstr(quicksum(x[i,j] for i in cities) <= quicksum(capk[j,k]*a[j,k] for k in range(1,4)))
+		model.addConstr(quicksum(x[j,i] for i in cities) <= quicksum(capk[j,k]*a[j,k] for k in range(1,4)))
 
 	# Cities with special needs must be served by at least a size 2 hospital.
 	for i in cities_sp:
-		model.addConstr(quicksum(x[i,j] * a[j,k] for j in hospitals for k in range(2,4)) == 1)
+		model.addConstr(quicksum(x[j,i] * a[j,k] for j in hospitals for k in range(2,4)) == 1)
 
 	# Set function to optimize and mode to minimize
-    model.setObjective(quicksum(x[i,j]*costk[j,k]*a[j,k] for i in cities for j in hospitals for k in range(1,4)) - quicksum(x[i,j]*closing_income[j] for i in cities for j in hospitals), GRB.MINIMIZE)
-    model.ModelSense = GRB.MINIMIZE
+	model.setObjective(quicksum(x[j,i]*costk[j,k]*a[j,k] for i in cities for j in hospitals for k in range(1,4)) - quicksum(x[j,i]*closing_income[j] for i in cities for j in hospitals), GRB.MINIMIZE)
+	model.ModelSense = GRB.MINIMIZE
 
 
 
-      # Solve
+    # Solve
     model.optimize()
 
 
