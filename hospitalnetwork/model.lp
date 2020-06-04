@@ -1,10 +1,11 @@
 \ Model Hospital NetwORk
 \ LP format - for model browsing. Use MPS format to capture full model detail.
 Minimize
-  100 a_h1_k1 + 200 a_h1_k2 + 600 a_h1_k3 - 10 a_h2_k1 + 150 a_h2_k3
-   + 150 a_h3_k1 + 350 a_h3_k2 + 400 a_h3_k3 + 180 a_h4_k1 + 200 a_h4_k2
-   + 480 a_h4_k3 + 200 a_h5_k1 + 300 a_h5_k2 + 400 a_h5_k3 + 200 a_h6_k2
-   + 500 a_h6_k3 + 100 a_h7_k1 + 150 a_h7_k2 + 200 a_h7_k3 - 100 Constant
+  100 a_h1_k1 + 200 a_h1_k2 + 600 a_h1_k3 + 90 a_h2_k1 + 100 a_h2_k2
+   + 250 a_h2_k3 + 50 a_h3_k1 + 250 a_h3_k2 + 300 a_h3_k3 + 180 a_h4_k1
+   + 200 a_h4_k2 + 480 a_h4_k3 + 200 a_h5_k1 + 300 a_h5_k2 + 400 a_h5_k3
+   + 50 a_h6_k1 + 250 a_h6_k2 + 550 a_h6_k3 + 100 a_h7_k1 + 150 a_h7_k2
+   + 200 a_h7_k3 - 150 Constant
 Subject To
  R0: x_h1_c1 + x_h2_c1 + x_h4_c1 + x_h5_c1 = 1
  R1: x_h1_c2 + x_h2_c2 + x_h4_c2 + x_h5_c2 = 1
