@@ -41,7 +41,6 @@ def solve(full_instance_path):
             a[j,k] = model.addVar(vtype='b', name="a_%s_%s" % (j,k))
 
 
-    print(outOfRange)
     # Update the model to make variables known. From now on, no variables should be added.
     model.update()
 
