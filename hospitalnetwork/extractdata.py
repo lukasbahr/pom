@@ -38,16 +38,22 @@ def getHospitalData(full_instance_path):
                 continue
             elif (len(row) == 9):
                 hospitals.append(row[0])
+
+                closingIncome.append(0)
+
                 h_coord.append((int(row[1]), int(row[2])))
+
                 c[0].append(int(row[3]))
                 c[1].append(int(row[4]))
                 c[2].append(int(row[5]))
+
                 b[0].append(int(row[6]))
                 b[1].append(int(row[7]))
                 b[2].append(int(row[8]))
 
+
             elif (len(row) == 2):
-                existingHospitalData.append(row)
+                closingIncome[int(row[0].strip('h'))-1] = int(row[1])
 
             elif (len(row) == 3):
                 cities.append(row[0])
@@ -56,15 +62,6 @@ def getHospitalData(full_instance_path):
             elif (len(row) == 1):
                 idx = int(row[0].strip('c'))
                 minSize2.append(idx-1)
-
-    #  for idx in range(len(hospitals)):
-        #  for entry in existingHospitalData:
-        #      if (int(entry[0].strip('h'))-1) == idx:
-        #          closingIncome.append(int(entry[1]))
-        #      else:
-        #          closingIncome.append(0)
-#
-    closingIncome = [0,100,0,0,0,50,0]
 
     return hospitals, cities, h_coord, c_coord, c, b, closingIncome, minSize2
 
