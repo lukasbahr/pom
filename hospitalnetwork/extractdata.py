@@ -12,8 +12,8 @@ def getHospitalData(full_instance_path):
             coord - coordinates [[x_y_h_coordinates], [x_y_c_coordinates]]
             c - cost [[costk1], [costk2], [costk3]]
             b - capacity [[capk1], [capk2], [capk3]]
-            closingIncome - closing income {'existing_hospital': closing_income}
-            min_size_2 - cities with minimum hospital size 2 [cities]
+            g - closing income
+            citiesSpecial - cities with minimum hospital size 2 [cities]
     """
 
     hospitals = []
@@ -22,14 +22,11 @@ def getHospitalData(full_instance_path):
     c_coord = []
     c = [[],[],[]]
     b = [[],[],[]]
-    closingIncome = []
-    minSize2 = []
+    g = []
+    citiesSpecial = []
 
     skipString = {'# hospitals: loc_id', '# existing hospitals: loc_id', '# cities: loc_id', '# cities with minimum hospital size 2: loc_id'}
-    hospitalData = []
-    existingHospitalData = []
-    cityData = []
-    cityMinData = []
+
     with open(full_instance_path, 'r') as read_obj:
         csv_dict_reader = csv.reader(read_obj, delimiter=',')
         for row in csv_dict_reader:
@@ -39,7 +36,7 @@ def getHospitalData(full_instance_path):
             elif (len(row) == 9):
                 hospitals.append(row[0])
 
-                closingIncome.append(0)
+                g.append(0)
 
                 h_coord.append((int(row[1]), int(row[2])))
 
@@ -51,9 +48,8 @@ def getHospitalData(full_instance_path):
                 b[1].append(int(row[7]))
                 b[2].append(int(row[8]))
 
-
             elif (len(row) == 2):
-                closingIncome[int(row[0].strip('h'))-1] = int(row[1])
+                g[int(row[0].strip('h'))-1] = int(row[1])
 
             elif (len(row) == 3):
                 cities.append(row[0])
@@ -61,8 +57,8 @@ def getHospitalData(full_instance_path):
 
             elif (len(row) == 1):
                 idx = int(row[0].strip('c'))
-                minSize2.append(idx-1)
+                citiesSpecial.append(idx-1)
 
-    return hospitals, cities, h_coord, c_coord, c, b, closingIncome, minSize2
+    return hospitals, cities, h_coord, c_coord, c, b, g, citiesSpecial
 
 
