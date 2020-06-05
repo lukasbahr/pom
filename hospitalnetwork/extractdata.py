@@ -1,6 +1,4 @@
 import csv
-import pandas as pd
-
 
 def getHospitalData(full_instance_path):
     """
