@@ -16,7 +16,7 @@ def getHospitalData(full_path_instance):
             citiesSpecial - cities with minimum hospitalsital size 2 [cities]
     """
 
-    df = pd.read_csv(full_path_instance, header = None) # import df
+    df = pd.read_csv(full_path_instance, header = None) 
 
     idx = []
     for i in df.index:
