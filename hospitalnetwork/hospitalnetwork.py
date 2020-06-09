@@ -1,4 +1,4 @@
-from gurobipy import *
+from gurobi import *
 import math
 import extractdata
 
@@ -12,7 +12,9 @@ def solve(full_path_instance):
     # Get hospital data from full instance path
     hospitals, cities, h_coord, c_coord, c, b, g, citiesSpecial = extractdata.getHospitalData(full_path_instance)
 
-
+    print(c)
+    print(b)
+    print(g)
     # -----------------------------------------------------------------------
     # Initialize model
     # -----------------------------------------------------------------------
@@ -32,7 +34,7 @@ def solve(full_path_instance):
             if dist > 30:
                 # Keep track of the pairs out of range
                 outOfRange.append((j,i))
-            else:
+            elif dist <= 30:
                 x[j,i] = model.addVar(vtype='b', name="x_h%s_c%s" % (j+1,i+1))
 
     # Decision variable y_j_k indicates whether hospital j is built of size k
@@ -88,7 +90,7 @@ def solve(full_path_instance):
             range(3)))*g[j] for j in range(len(hospitals)))), GRB.MINIMIZE)
 
     model.update()
-    #  model.write('model.lp')
+    model.write('model.lp')
 
     # Solve model
     model.optimize()
@@ -96,9 +98,9 @@ def solve(full_path_instance):
     return model
 
 
-#  if __name__ == "__main__":
-    #
-    #  import sys
-    #  path = sys.argv[1]
-    #  solve(path)
-#
+if __name__ == "__main__":
+
+    import sys
+    path = sys.argv[1]
+    solve(path)
+
