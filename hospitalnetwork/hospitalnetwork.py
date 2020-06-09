@@ -1,16 +1,16 @@
-from gurobi import *
+from gurobipy import *
 import math
 import extractdata
 
 
-def solve(full_instance_path):
+def solve(full_path_instance):
     """
     input: sys argv to csv path with hospital data
     output: model
     """
 
     # Get hospital data from full instance path
-    hospitals, cities, h_coord, c_coord, c, b, g, citiesSpecial = extractdata.getHospitalData(full_instance_path)
+    hospitals, cities, h_coord, c_coord, c, b, g, citiesSpecial = extractdata.getHospitalData(full_path_instance)
 
 
     # -----------------------------------------------------------------------
@@ -40,7 +40,7 @@ def solve(full_instance_path):
     y = {}
     for j in range(len(hospitals)):
         for k in range(3):
-            y[j,k] = model.addVar(vtype='b', name="a_h%s_k%s" % (j+1,k+1))
+            y[j,k] = model.addVar(vtype='b', name="y_h%s_k%s" % (j+1,k+1))
 
     # Make variable known to model
     model.update()
@@ -96,9 +96,9 @@ def solve(full_instance_path):
     return model
 
 
-if __name__ == "__main__":
-
-    import sys
-    path = sys.argv[1]
-    solve(path)
-
+#  if __name__ == "__main__":
+    #
+    #  import sys
+    #  path = sys.argv[1]
+    #  solve(path)
+#
