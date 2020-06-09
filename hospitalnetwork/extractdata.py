@@ -1,62 +1,81 @@
-import csv
+import pandas as pd
+import math as math
 
-def getHospitalData(full_instance_path):
+
+def getHospitalData(full_path_instance):
     """
-    input: path to csv file containing hospital network data
-    output: hospitals - name of hospitals
+    input: path to csv file containing hospitalsital network df
+    output: hospitalsitals - name of hospitalsitals
             cities - name of cities
-            h_coord - hospital coordinates
+            h_coord - hospitalsital coordinates
             c_coord - city coordinates
             coord - coordinates [[x_y_h_coordinates], [x_y_c_coordinates]]
             c - cost [[costk1], [costk2], [costk3]]
             b - capacity [[capk1], [capk2], [capk3]]
             g - closing income
-            citiesSpecial - cities with minimum hospital size 2 [cities]
+            citiesSpecial - cities with minimum hospitalsital size 2 [cities]
     """
 
-    hospitals = []
-    cities = []
-    h_coord = []
-    c_coord = []
-    c = [[],[],[]]
-    b = [[],[],[]]
-    g = []
-    citiesSpecial = []
+    df = pd.read_csv(full_path_instance, header = None) # import df
 
-    skipString = {'# hospitals: loc_id', '# existing hospitals: loc_id', '# cities: loc_id', '# cities with minimum hospital size 2: loc_id'}
+    idx = []
+    for i in df.index:
+        if df.iloc[i,0][0] == '#':
+            idx.append(i)
 
-    with open(full_instance_path, 'r') as read_obj:
-        csv_dict_reader = csv.reader(read_obj, delimiter=',')
-        for row in csv_dict_reader:
-            row = list(filter(None, row))
-            if row[0] in skipString:
-                continue
-            elif (len(row) == 9):
-                hospitals.append(row[0])
+    # Get hospitals
+    hospitals = df.iloc[idx[0]:idx[1],:]
+    hospitals.columns = hospitals.iloc[0]
+    hospitals = hospitals.drop(hospitals.index[0])
+    hospitals.dropna(axis='columns', inplace = True)
+    J = list(hospitals.iloc[:,0])
 
-                g.append(0)
+    # Get closing hospitals
+    closingHospitals = df.iloc[idx[1]:idx[2],:]
+    closingHospitals.columns = closingHospitals.iloc[0]
+    closingHospitals = closingHospitals.drop(closingHospitals.index[0])
+    closingHospitals.dropna(axis='columns', inplace = True)
+    J_2 = list(closingHospitals.iloc[:,0])
 
-                h_coord.append((int(row[1]), int(row[2])))
+    # Get cities
+    cities = df.iloc[idx[2]:idx[3],:]
+    cities.columns = cities.iloc[0]
+    cities = cities.drop(cities.index[0])
+    cities.dropna(axis='columns', inplace = True)
+    I = list(cities.iloc[:,0])
 
-                c[0].append(int(row[3]))
-                c[1].append(int(row[4]))
-                c[2].append(int(row[5]))
+    # Get special cities
+    specialCities = df.iloc[idx[3]:,:]
+    specialCities.columns = specialCities.iloc[0]
+    specialCities = specialCities.drop(specialCities.index[0])
+    specialCities.dropna(axis='columns', inplace = True)
+    I_2 = list(specialCities.iloc[:,0])
 
-                b[0].append(int(row[6]))
-                b[1].append(int(row[7]))
-                b[2].append(int(row[8]))
+    # Set hospital sizes
+    K = [1, 2, 3]
 
-            elif (len(row) == 2):
-                g[int(row[0].strip('h'))-1] = int(row[1])
+    # Transform column names
+    hospitals.set_index(hospitals.columns[0], inplace = True)
+    hospitals = hospitals.astype('int64')
 
-            elif (len(row) == 3):
-                cities.append(row[0])
-                c_coord.append((int(row[1]), int(row[2])))
+    cities.set_index(cities.columns[0], inplace = True)
+    cities = cities.astype('int64')
 
-            elif (len(row) == 1):
-                idx = int(row[0].strip('c'))
-                citiesSpecial.append(idx-1)
+    closingHospitals.set_index(closingHospitals.columns[0], inplace = True)
+    closingHospitals = closingHospitals.astype('int64')
 
-    return hospitals, cities, h_coord, c_coord, c, b, g, citiesSpecial
+    # Set cloing income, capacity and cost
+    g = {}
+    for j in J_2:
+        g[j] = closingHospitals.loc[j, ' closing_income']
 
+    c = {}
+    b = {}
+    for k in K:
+        for j in J:
+            b[k,j] = hospitals.loc[j, ' capk'+str(k)]
+            c[k,j] = hospitals.loc[j, ' costk'+str(k)]
+
+
+    return hospitals, cities, J, J_2, I, I_2, g, b, c, K
 

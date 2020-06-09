@@ -7,7 +7,7 @@ Created on Fri May 29 17:38:35 2020
 """
 
 # enter path
-full_path_instance = "/Users/lukasbahr/POM/hospitalnetwork/data2.csv"
+full_path_instance = "/Users/lukasbahr/POM/hospitalnetwork/data1.csv"
 
 import hospitalnetwork
 hospitalnetwork.solve(full_path_instance)
