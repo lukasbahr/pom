@@ -76,6 +76,7 @@ def getHospitalData(full_path_instance):
             b[k,j] = hospitals.loc[j, ' capk'+str(k)]
             c[k,j] = hospitals.loc[j, ' costk'+str(k)]
 
+    print(c)
 
     return hospitals, cities, J, J_2, I, I_2, g, b, c, K
 
