@@ -74,7 +74,6 @@ def getCourseData(full_path_instance):
 
 
                 elif isUnavailabilityConstraints:
-                    print(content)
                     if not content[0] in t:
                         t[content[0]] = [tuple((int(content[1]),
                             int(content[2].replace("\n", ""))))]
