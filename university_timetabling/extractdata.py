@@ -19,6 +19,8 @@ def getCourseData(full_path_instance):
     c = {} # course k taught by teacher e.g. {'c0005': 't004'}. Course c0005 taught by teacher t004
     q = {} # couses k of the curiccula p {'q00': ('c0023', 'c002')}. Curricula q00 consist of courses c0023 and c002
     t = {} # unavailability, courses k cannot be take place at (i,j) i being the day and j being the timeslot e.g. {'c0003':(2,3)}. Course c0003 cannot take place on day 2 with timeslot 3
+    n = 0 # Number of days
+    m = 0 # Number of timeslots
 
 
 
@@ -59,11 +61,20 @@ def getCourseData(full_path_instance):
 
                 content = re.split("  | |\t", line)
 
+                if line.find("Days") > -1:
+                    n = int(content[1])
+                elif line.find("Periods_per_day") > -1:
+                    m = int(content[1])
+
                 if isCourses:
                     l[content[0]] = int(content[2])
                     s[content[0]] = int(content[4].replace("\n", ""))
                     d[content[0]] = int(content[3])
-                    c[content[0]] = content[1]
+
+                    if not content[1] in c:
+                        c[content[1]] = [content[0]]
+                    else:
+                        c[content[1]].append(content[0])
 
                 elif isRooms:
                     b[content[0]] = int(content[1].replace("\n", ""))
@@ -82,7 +93,7 @@ def getCourseData(full_path_instance):
                             int(content[2].replace("\n", "")))))
 
 
-    return l, s, b, d, c, q, t
+    return l, s, b, d, c, q, t, n, m
 
 
 
