@@ -23,6 +23,7 @@ def solve(path):
                 G.add_edge(j, i, weight=dij)
 
     arcs = [(a, b, k['weight']) for a, b, k in G.edges.data()]
+    print(arcs)
 
 
     model = Model("TSP")
@@ -57,6 +58,10 @@ def solve(path):
         model.addConstr(u[i] >= 0)
 
     model.optimize()
+
+    #  for v in model.getVars():
+        #  print('%s %g' % (v.varName, v.x))
+
 
 
 def getCityData(path):
