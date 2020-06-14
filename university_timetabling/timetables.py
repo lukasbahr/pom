@@ -12,7 +12,7 @@ def solve(full_path_instance):
     # Initialize model
     # -----------------------------------------------------------------------
 
-    model = Model("Hospital NetwORk")
+    model = Model("University Timetabling")
 
 
     x = {}
@@ -21,7 +21,7 @@ def solve(full_path_instance):
     y_curr = {}
     y_time = {}
     y_days = {}
-    T = []
+    T = []      # list of all timeslots for easier quicksums
 
     for i in range(n):
         for k in l:
@@ -30,19 +30,19 @@ def solve(full_path_instance):
         for j in range(m):
             T.append((i,j))
 
-            for k in l:
+            for k in l:     # variable to assign a course k to a timeslot (i,j)
                 x[k,(i,j)] = model.addVar(vtype='b', name="x_%s_(%s,%s)" % (k,i,j))
 
-            for a in c:
+            for a in c:     # variable to activate cost for assistants to give lecture
                 y_assi[a,(i,j)] = model.addVar(vtype=GRB.INTEGER,
                         name="y_assi_%s_(%s,%s)" %(a,i,j))
 
-            for u in q:
+            for u in q:     # variable to avtivate penalty for courses of same curriculum
                 y_curr[u,(i,j)] = model.addVar(vtype=GRB.INTEGER,
                         name="y_curr_%s_(%s,%s)" %(u,i,j))
 
     for v in t:
-        for w in t[v]:
+        for w in t[v]:      # variable to activate penalty for using forbidden timeslots
                 y_time[v,w] = model.addVar(vtype=GRB.INTEGER,
                         name="y_curr_%s_(%s)" %(v,w))
 
@@ -55,7 +55,7 @@ def solve(full_path_instance):
     for k in l:
         model.addConstr(quicksum(x[k,(i,j)] for (i,j) in T) == l[k])
 
-        model.addConstr(quicksum(d[k]-z[k,i] for i in range(n)) == y_days[k])
+        model.addConstr(d[k]-quicksum(z[k,i] for i in range(n)) <= y_days[k])
 
         for i in range(n):
             model.addConstr(quicksum(x[k,(i,j)] for j in range(m))*(1-z[k,i])
@@ -74,7 +74,12 @@ def solve(full_path_instance):
         for w in t[v]:
             model.addConstr(x[v,w]==0+y_time[v,w])
 
+    model.setObjective(1 * quicksum(y_assi[a,(i,j)] for a in c for (i,j) in T)
+                       +0.1 * quicksum(y_curr[u,(i,j)] for u in q for (i,j) in T)
+                       +10 * quicksum(y_time[v,w] for v in t for w in t[v])
+                       +0.1 * quicksum(y_days[k] for k in l ), GRB.MINIMIZE)
 
+    model.update()
     model.write('model.lp')
 
     # Solve model
