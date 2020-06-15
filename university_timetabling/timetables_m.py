@@ -1,5 +1,7 @@
 import extractdata
 from gurobipy import *
+import networkx as nx
+
 
 
 
@@ -40,13 +42,13 @@ def solve(full_path_instance):
             z[k,i] = model.addVar(vtype = 'b', name="z_%s_%s" %(k,i))
 
         for j in range(m):
-            T.append((i,j))
+            T.append((i, j))
 
-            for k in l:         # variable to assign a course k to a timeslot (i,j)
-                x[k,(i,j)] = model.addVar(vtype='b', name="x_%s_(%s,%s)" % (k,i,j))
+            for k in l:         # variable to assign a course k to a timeslot (i, j)
+                x[k, (i, j)] = model.addVar(vtype='b', name="x_%s_(%s,%s)" % (k, i, j))
 
             for L_pair in L:         # variable to activate cost for assistants to give lecture
-                y_assi[L_pair,(i,j)] = model.addVar(vtype=GRB.INTEGER,
+                y_assi[L_pair, (i, j)] = model.addVar(vtype=GRB.INTEGER,
                         name="y_assi_(%s_%s)_(%s,%s)" %(L_pair[0], L_pair[1], i, j))
 
             for C_pair in C:    # variable to activate penalty for courses of same curriculum
@@ -55,37 +57,35 @@ def solve(full_path_instance):
 
     for v in t:
         for w in t[v]:      # variable to activate penalty for using forbidden timeslots
-                y_time[v,w] = model.addVar(vtype=GRB.INTEGER,
-                        name="y_time_%s_(%s)" %(v,w))
-
+            y_time[v,w] = model.addVar(vtype=GRB.INTEGER, name="y_time_%s_(%s)" %(v, w))
 
     for k in l:
-        y_days[k] = model.addVar(vtype = GRB.INTEGER, name = "y_days_%s" %(k))
+        y_days[k] = model.addVar(vtype=GRB.INTEGER, name="y_days_%s" %(k))
 
     model.update()
     model.write('model.lp')
 
     for k in l:
-        model.addConstr(quicksum(x[k,(i,j)] for (i,j) in T) == l[k])
+        model.addConstr(quicksum(x[k, (i, j)] for (i, j) in T) == l[k])
 
-        model.addConstr(d[k]-quicksum(z[k,i] for i in range(n)) <= y_days[k])
+        model.addConstr(d[k]-quicksum(z[k, i] for i in range(n)) <= y_days[k])
 
         for i in range(n):
-            model.addConstr(quicksum(x[k,(i,j)] for j in range(m))*(1-z[k,i])
-                    == 0 )
+            model.addConstr(quicksum(x[k, (i, j)] for j in range(m)) <= m*z[k, i])
+            model.addConstr(quicksum(x[k, (i, j)] for j in range(m)) >= z[k, i])
 
     for (i,j) in T:
         for L_pair in L:
-            model.addConstr(quicksum(x[k,(i,j)] for k in L_pair) <=
-                    1+y_assi[L_pair,(i,j)])
+            model.addConstr(quicksum(x[k, (i, j)] for k in L_pair) <=
+                    1+y_assi[L_pair, (i, j)])
 
         for C_pair in C:
-            model.addConstr(quicksum(x[k,(i,j)] for k in C_pair) <=
-                    1+y_curr[C_pair,(i,j)])
+            model.addConstr(quicksum(x[k, (i, j)] for k in C_pair) <=
+                    1+y_curr[C_pair, (i, j)])
 
     for v in t:
         for w in t[v]:
-            model.addConstr(x[v,w]==0+y_time[v,w])
+            model.addConstr(x[v,w] == 0+y_time[v,w])
 
     model.setObjective(1 * quicksum(y_assi[L_pair,(i,j)] for L_pair in L for (i,j) in T)
                        +0.1 * quicksum(y_curr[C_pair,(i,j)] for C_pair in C for (i,j) in T)
@@ -94,12 +94,52 @@ def solve(full_path_instance):
 
     model.update()
     #model.write('model.lp')
+    #model.optimize()
 
-    # Solve model
-    model.optimize()
+    RCC_violated = True
+    RCC_count = 0
+
+    while RCC_violated:
+        break_condition = []
+        # Solve model initially
+        model.update()
+        model.optimize()
+        for (i, j) in T:
+
+            # Graph Generation
+            x_value = 0
+            G = nx.DiGraph()
+            G.add_node('start')
+            G.add_node('end')
+            for room in b:
+                G.add_edge(room, 'end', capacity=1)
+            for k in s:
+                G.add_edge('start', k, capacity=round(max(0, x[k, (i, j)].x)))
+                x_value += x[k, (i, j)].x
+                for room in b:
+                    if s[k] <= b[room]:
+                        G.add_edge(k, room, capacity = 1)
+
+            fmax = nx.maximum_flow_value(G, 'start', 'end')
+
+            #print(x_value)
+            #print(fmax)
+            if x_value > round(fmax):
+                RCC_count += 1
+                model.addConstr(quicksum(x[k,(i,j)] for k in l) <= fmax)
+                print('RCC added!')
+                break_condition.append(True)
+                continue
+
+            else:
+                break_condition.append(False)
+
+        if len(set(break_condition)) < 2:
+            RCC_violated = False
+            print(RCC_count)
+
 
     return model
-
 
 if __name__ == "__main__":
 
