@@ -66,25 +66,31 @@ def solve(full_path_instance):
     model.write('model.lp')
 
     for k in l:
+        # reach l[k] lectures per week for course k
         model.addConstr(quicksum(x[k, (i, j)] for (i, j) in T) == l[k])
 
+        # penalize if min. different days for lectures aren't reached
         model.addConstr(d[k]-quicksum(z[k, i] for i in range(n)) <= y_days[k])
 
         for i in range(n):
+            # create a variable z[k, i] so it is 1 if a course k has lectures on day i
             model.addConstr(quicksum(x[k, (i, j)] for j in range(m)) <= m*z[k, i])
             model.addConstr(quicksum(x[k, (i, j)] for j in range(m)) >= z[k, i])
 
     for (i,j) in T:
         for L_pair in L:
+            # variable to penalize, if lectures of courses taught by the same prof. take place at the same time
             model.addConstr(quicksum(x[k, (i, j)] for k in L_pair) <=
                     1+y_assi[L_pair, (i, j)])
 
         for C_pair in C:
+            # variable to penalize, if lectures of courses on the same curriculum take place at the same time
             model.addConstr(quicksum(x[k, (i, j)] for k in C_pair) <=
                     1+y_curr[C_pair, (i, j)])
 
     for v in t:
         for w in t[v]:
+            # penalize, if a certain lecture is scheduled in a certain timeslot
             model.addConstr(x[v,w] == 0+y_time[v,w])
 
     model.setObjective(1 * quicksum(y_assi[L_pair,(i,j)] for L_pair in L for (i,j) in T)
@@ -104,7 +110,7 @@ def solve(full_path_instance):
         # Solve model initially
         model.update()
         model.optimize()
-        for (i, j) in T:
+        for (i, j) in T:    # check Graph-condition for every timeslot separately
 
             # Graph Generation
             x_value = 0
@@ -115,16 +121,16 @@ def solve(full_path_instance):
                 G.add_edge(room, 'end', capacity=1)
             for k in s:
                 G.add_edge('start', k, capacity=round(max(0, x[k, (i, j)].x)))
-                x_value += x[k, (i, j)].x
+                x_value += round(x[k, (i, j)].x)
                 for room in b:
                     if s[k] <= b[room]:
                         G.add_edge(k, room, capacity = 1)
 
-            fmax = nx.maximum_flow_value(G, 'start', 'end')
+            fmax = round(nx.maximum_flow_value(G, 'start', 'end'))
 
             #print(x_value)
             #print(fmax)
-            if x_value > round(fmax):
+            if x_value > fmax:
                 RCC_count += 1
                 model.addConstr(quicksum(x[k,(i,j)] for k in l) <= fmax)
                 print('RCC added!')
