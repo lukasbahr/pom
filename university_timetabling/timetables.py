@@ -90,7 +90,7 @@ def solve(full_path_instance):
             model.addConstr(x[v, w] <= 0 + y_time[v, w])
 
     # model.update()
-    model.write('model.lp')
+    #model.write('model.lp')
 
     # model.optimize()
 
@@ -127,9 +127,9 @@ def solve(full_path_instance):
                        + 1 * quicksum(y_assi[L_pair, (i, j)] for L_pair in L for (i, j) in T)
                        + 0.1 * quicksum(y_curr[C_pair, (i, j)] for C_pair in C for (i, j) in T)
                        + 10 * quicksum(x[v, w] for v in t for w in t[v]), GRB.MINIMIZE)
-
+    model.write('model.lp')
     model.optimize(cb_RCC_violation)
-    print(RCC_count)
+    #print(RCC_count)
 
     return model
 
