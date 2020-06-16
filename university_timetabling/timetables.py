@@ -57,7 +57,7 @@ def solve(full_path_instance):
             y_time[v, w] = model.addVar(vtype=GRB.INTEGER, name="y_time_%s_(%s)" % (v, w))
 
     for k in l:
-        y_days[k] = model.addVar(vtype=GRB.BINARY, name="y_days_%s" % (k))
+        y_days[k] = model.addVar(vtype=GRB.INTEGER, name="y_days_%s" % (k))
 
     model.update()
     # model.write('model.lp')
