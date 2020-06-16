@@ -71,7 +71,7 @@ def solve(full_path_instance):
 
         # penalize if min. different days for lectures aren't reached
         model.addConstr(d[k]-quicksum(z[k, i] for i in range(n)) <= y_days[k])
-
+        
         for i in range(n):
             # create a variable z[k, i] so it is 1 if a course k has lectures on day i
             model.addConstr(quicksum(x[k, (i, j)] for j in range(m)) <= m*z[k, i])
@@ -87,18 +87,18 @@ def solve(full_path_instance):
             # variable to penalize, if lectures of courses on the same curriculum take place at the same time
             model.addConstr(quicksum(x[k, (i, j)] for k in C_pair) <=
                     1+y_curr[C_pair, (i, j)])
-
+    '''
     for v in t:
         for w in t[v]:
             # penalize, if a certain lecture is scheduled in a certain timeslot
             model.addConstr(x[v,w] == 0+y_time[v,w])
-
+    '''
     model.setObjective(1 * quicksum(y_assi[L_pair,(i,j)] for L_pair in L for (i,j) in T)
                        +0.1 * quicksum(y_curr[C_pair,(i,j)] for C_pair in C for (i,j) in T)
-                       +10 * quicksum(y_time[v,w] for v in t for w in t[v])
+                       +10 * quicksum(x[v,w] for v in t for w in t[v])
                        +0.1 * quicksum(y_days[k] for k in l ), GRB.MINIMIZE)
 
-    model.update()
+    #model.update()
     #model.write('model.lp')
     #model.optimize()
 
@@ -108,31 +108,34 @@ def solve(full_path_instance):
     while RCC_violated:
         break_condition = []
         # Solve model initially
-        model.update()
+        #model.update()
         model.optimize()
         for (i, j) in T:    # check Graph-condition for every timeslot separately
 
             # Graph Generation
             x_value = 0
+            active_lectures = []
             G = nx.DiGraph()
             G.add_node('start')
             G.add_node('end')
             for room in b:
                 G.add_edge(room, 'end', capacity=1)
             for k in s:
-                G.add_edge('start', k, capacity=round(max(0, x[k, (i, j)].x)))
-                x_value += round(x[k, (i, j)].x)
+                if round(x[k, (i, j)].x) > 0:
+                    G.add_edge('start', k, capacity=round(max(0, x[k, (i, j)].x)))
+                    x_value += round(x[k, (i, j)].x)
+                    active_lectures.append(k)
                 for room in b:
                     if s[k] <= b[room]:
-                        G.add_edge(k, room, capacity = 1)
-
+                        G.add_edge(k, room, capacity=1)
+            #print(G.number_of_nodes())
             fmax = round(nx.maximum_flow_value(G, 'start', 'end'))
 
             #print(x_value)
             #print(fmax)
             if x_value > fmax:
                 RCC_count += 1
-                model.addConstr(quicksum(x[k,(i,j)] for k in l) <= fmax)
+                model.addConstr(quicksum(x[k,(i,j)] for k in active_lectures) <= fmax)
                 print('RCC added!')
                 break_condition.append(True)
                 continue
