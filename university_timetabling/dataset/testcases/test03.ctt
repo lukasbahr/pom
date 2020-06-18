@@ -1,0 +1,23 @@
+Name: Fis0506-1
+Courses: 1
+Rooms: 1
+Days: 1
+Periods_per_day: 3
+Curricula: 1
+Constraints: 1
+
+COURSES:
+c0001 t000 2 2 130
+
+
+ROOMS:
+S	130
+
+CURRICULA:
+q000  1 c0001
+
+UNAVAILABILITY_CONSTRAINTS:
+c0001 0 0
+
+
+END.

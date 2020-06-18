@@ -1,0 +1,30 @@
+Name: Ing0304-1
+Courses: 5
+Rooms: 2
+Days: 2
+Periods_per_day: 1
+Curricula: 1
+Constraints: -1
+
+COURSES:
+A t000 1 2 150
+B t000 1 1 160
+C t000 1 1 24
+D t000 1 1 24
+E t001 1 1 25
+F t002 1 1 50
+
+ROOMS:
+36	160
+37	50
+38  24
+
+CURRICULA:
+q000  3 A C B
+q001  1 D E
+
+UNAVAILABILITY_CONSTRAINTS:
+A 0 0
+A 1 0
+
+END.
