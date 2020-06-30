@@ -1,13 +1,5 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 import geopandas as gpd
-import networkx as nx
-from gurobipy import *
-import re
-
-# Enable high resolution plots
-from IPython.display import set_matplotlib_formats
-set_matplotlib_formats('retina')
 
 def getPolititcalDistrictData(shp_file_centeroid, shp_file, csv_zuordnung):
 
@@ -50,11 +42,8 @@ def getDF_CSVZuordnung(path):
 
 
 if __name__ == '__main__':
-    import sys
-
-    shp_file_centeroid = "/Users/lukasbahr/POM/political_districting/data/plz-5stellig-centroid.shp"
-    shp_file  = "/Users/lukasbahr/POM/political_districting/data/plz-5stellig.shp"
-    csv_zuordnung  = "/Users/lukasbahr/POM/political_districting/data/zuordnung_plz_ort.csv"
+    shp_file_centeroid = "/users/lukasbahr/pom/political_districting/data/plz-5stellig-centroid.shp"
+    shp_file  = "/users/lukasbahr/pom/political_districting/data/plz-5stellig.shp"
+    csv_zuordnung  = "/users/lukasbahr/pom/political_districting/data/zuordnung_plz_ort.csv"
 
     getPolititcalDistrictData(shp_file_centeroid, shp_file, csv_zuordnung)
-
