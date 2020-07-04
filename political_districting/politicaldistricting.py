@@ -6,7 +6,26 @@ import networkx as nx
 from gurobipy import *
 
 def solve(G, k, req_p):
-    pass
+    #pass
+    #Initialize Model
+    model = Model("Political Districting")
+    model.params.LazyConstraints = 1
+
+    #Set Variables:
+    for plz in list(G.nodes):
+        for district in range(k):
+            model.AddVar(vtype = GRB.BINARY, name="x_%s_%s" % (plz, district))
+
+    #Set Constraints
+    #Each postcode must be part of exactly one district
+    for plz in list(G.nodes):
+            model.addConstr(quicksum(x[plz][district] for district in range(k)) == 1 )
+
+    #Each electoral district must comprise approximately the same number of people
+    for district in range(k):
+        model.addConstr(abs(quicksum(x[plz][district] for plz in list(G.nodes())) - req_p) <= 0.15*req_p )
+
+    return model
 
 def plotMap(df_Border, df_Center):
     df_Border = findSharedBorders(df_Border)
@@ -18,9 +37,7 @@ def plotMap(df_Border, df_Center):
 
     # fix style
     for x, y in G.edges:
-        print(x,y)
         for index, row in df_Center.iterrows():
-            print(row.geometry)
             if row['plz'] == x:
                 point_1 = [row.geometry.centroid.x, row.geometry.centroid.y]
             elif row['plz'] == y:
@@ -44,6 +61,26 @@ def createGraph(df_Border):
         G.add_node(row['plz'], population=row['einwohner'])
         G.add_edges_from((row['plz'], x) for x in row['neighbours'])
 
+def cb_sep_violation(model, where):
+    global sep_count
+    sep_count = 0
+    if where == GRB.Callback.MIPSOL:
+        rel = model.cbGetSolution(x)
+        #Iterate all districts to check their connectivity
+        for district in range(k):
+            #create a subgraph of all nodes assigned to this district
+            assignedNodes = [node for node in list(G.nodes) if round(rel[node, district]) == 1]
+            G_sub = G.subgraph(assignedNodes)
+            #check connectivity of all nodes on this subgraph
+
+def createGraph(df_Border):
+    df_Border = findSharedBorders(df_Border)
+    G = nx.Graph()
+    for index, row in df_Border.iterrows():
+        G.add_node(row['plz'], population=row['einwohner'])
+        for neighbour in row['neighbours']:
+            G.add_edge(row['plz'], neighbour, capacity = 1)
+
     return G
 
 
@@ -58,11 +95,25 @@ def findSharedBorders(df_Border):
     return df_Border
 
 
+def plotGraph(G, df_Center):
+    #Extract Centroid Coordinates as Dict to support nx.draw
+    coords = df_Center.set_index("plz").T.to_dict('list')
+    coords = {plz:[coords[plz][2][0].x, coords[plz][2][0].y] for plz in coords}
+    #Draw Graph
+    nx.draw(G, pos = coords, with_labels = True, node_color = 'r')
+    plt.show()
+
+
 if __name__ == "__main__":
 
-    shp_file_centeroid = "/Users/lukasbahr/POM/political_districting/data/plz-5stellig-centroid.shp"
-    shp_file  = "/Users/lukasbahr/POM/political_districting/data/plz-5stellig.shp"
-    csv_zuordnung  = "/Users/lukasbahr/POM/political_districting/data/zuordnung_plz_ort.csv"
+    shp_file_centeroid = "data/plz-5stellig-centroid.shp"
+    shp_file  = "data/plz-5stellig.shp"
+    csv_zuordnung  = "data/zuordnung_plz_ort.csv"
 
     df_Border, df_Center = extractdata.getPolititcalDistrictData(shp_file_centeroid, shp_file, csv_zuordnung)
     plotMap(df_Border, df_Center)
+
+    # Matthias
+    #  G = createGraph(df_Border)
+    #solve(G, 2, 290000)
+    #  plotGraph(G, df_Center)
