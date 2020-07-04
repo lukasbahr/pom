@@ -7,7 +7,9 @@ def getPolititcalDistrictData(shp_file_centeroid, shp_file, csv_zuordnung):
     drop = list(df_PLZ_BL['plz'])
 
     df_Border = getDF_SHPFile(shp_file, drop)
+    #df_Border.to_csv("/Users/matthias/dev/pom/political_districting/data/shp_file.csv", sep = '\t', index = False)
     df_Center = getDF_SHPFileCenteroid(shp_file_centeroid, drop)
+    #df_Center.to_csv("/Users/matthias/dev/pom/political_districting/data/shp_file_centroid.csv", sep = '\t', index = False)
 
     if len(df_Border)  == len(df_Center) == len(df_PLZ_BL):
         df_Border = df_Border.merge(df_PLZ_BL[['bundesland', 'plz']], left_on = 'plz', right_on = 'plz')
@@ -46,8 +48,8 @@ def getDF_CSVZuordnung(path):
 
 
 if __name__ == '__main__':
-    shp_file_centeroid = "/users/lukasbahr/pom/political_districting/data/plz-5stellig-centroid.shp"
-    shp_file  = "/users/lukasbahr/pom/political_districting/data/plz-5stellig.shp"
-    csv_zuordnung  = "/users/lukasbahr/pom/political_districting/data/zuordnung_plz_ort.csv"
+    shp_file_centeroid = "/Users/matthias/dev/pom/political_districting/data/plz-5stellig-centroid.shp"
+    shp_file  = "/Users/matthias/dev/pom/political_districting/data/plz-5stellig.shp"
+    csv_zuordnung  = "/Users/matthias/dev/pom/political_districting/data/zuordnung_plz_ort.csv"
 
     getPolititcalDistrictData(shp_file_centeroid, shp_file, csv_zuordnung)
