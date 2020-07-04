@@ -45,11 +45,3 @@ def getDF_CSVZuordnung(path):
     df.drop(df[df['bundesland'] != "Saarland"].index, axis=0, inplace=True)
 
     return df
-
-
-if __name__ == '__main__':
-    shp_file_centeroid = "/Users/matthias/dev/pom/political_districting/data/plz-5stellig-centroid.shp"
-    shp_file  = "/Users/matthias/dev/pom/political_districting/data/plz-5stellig.shp"
-    csv_zuordnung  = "/Users/matthias/dev/pom/political_districting/data/zuordnung_plz_ort.csv"
-
-    getPolititcalDistrictData(shp_file_centeroid, shp_file, csv_zuordnung)
