@@ -45,7 +45,7 @@ def createGraph(df_Border):
     df_Border = findSharedBorders(df_Border)
     G = nx.Graph()
     for index, row in df_Border.iterrows():
-        G.add_node(row['plz'], population=row['einwohner'])
+        G.add_node(row['plz'], population=row['einwohner'], district=0)
         for neighbour in row['neighbours']:
             G.add_edge(row['plz'], neighbour, capacity = 1)
 
