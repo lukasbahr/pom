@@ -35,19 +35,12 @@ def plotMap(df_Border, df_Center):
 
 
 def createGraph(df_Border):
-    G = nx.Graph()
-    for index, row in df_Border.iterrows():
-        G.add_node(row['plz'], population=row['einwohner'])
-        G.add_edges_from((row['plz'], x) for x in row['neighbours'])
-
-
-def createGraph(df_Border):
     df_Border = findSharedBorders(df_Border)
     G = nx.Graph()
     for index, row in df_Border.iterrows():
-        G.add_node(row['plz'], population=row['einwohner'], district=0)
+        G.add_node(row['plz'], population=row['einwohner'])
         for neighbour in row['neighbours']:
-            G.add_edge(row['plz'], neighbour, capacity = 1)
+            G.add_edge(row['plz'], neighbour)
 
     return G
 
@@ -72,14 +65,14 @@ def plotGraph(G, df_Center):
     plt.show()
 
 
-#  if __name__ == "__main__":
-    #
-    #  shp_file_centeroid = "data/plz-5stellig-centroid.shp"
-    #  shp_file  = "data/plz-5stellig.shp"
-    #  csv_zuordnung  = "data/zuordnung_plz_ort.csv"
-    #
-    #  df_Border, df_Center = extractdata.getPolititcalDistrictData(shp_file_centeroid, shp_file, csv_zuordnung)
-    #  plotMap(df_Border, df_Center)
+if __name__ == "__main__":
+
+    shp_file_centeroid = "data/plz-5stellig-centroid.shp"
+    shp_file  = "data/plz-5stellig.shp"
+    csv_zuordnung  = "data/zuordnung_plz_ort.csv"
+
+    df_Border, df_Center = extractdata.getPolititcalDistrictData(shp_file_centeroid, shp_file, csv_zuordnung)
+    plotMap(df_Border, df_Center)
 
     # Matthias
     #  G = createGraph(df_Border)
