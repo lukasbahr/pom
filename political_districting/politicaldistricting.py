@@ -29,18 +29,22 @@ def solve(G, k, req_p):
 
 
     def cb_sep_violation(model, where):
-        global sep_count
-        sep_count = 0
         if where == GRB.Callback.MIPSOL:
             rel = model.cbGetSolution(x)
-
             for district in range(k):
-
                 assignedNodes = [node for node in list(G.nodes) if round(rel[node, district]) == 1]
 
+                hallo = []
+                for y in assignedNodes:
+                    for r in assignedNodes:
+                        if G.has_edge(y,r):
+
+                            hallo.append((y,r))
+
+
                 G_copy = nx.Graph(G)
-                V = nx.subgraph(G, assignedNodes)
-                V = nx.Graph(V)
+                V = G.edge_subgraph(hallo)
+                #  V = nx.subgraph(G, assignedNodes)
                 comp = list(nx.connected_components(V))
 
                 if len(comp) >= 2:
