@@ -4,15 +4,12 @@ import matplotlib.pyplot as plt
 import geopandas as gpd
 import networkx as nx
 from gurobipy import *
+import politicaldistricting
 
 
 def plotMap(df_Border, df_Center):
     df_Border = findSharedBorders(df_Border)
     G = createGraph(df_Border)
-
-
-    fig, ax = plt.subplots()
-    ax.set_aspect('equal')
 
     # fix style
     for x, y in G.edges:
@@ -64,6 +61,31 @@ def plotGraph(G, df_Center):
     nx.draw(G, pos = coords, with_labels = True, node_color = 'r')
     plt.show()
 
+def plotDistricts(model, k, df_Border):
+    df_Border = findSharedBorders(df_Border)
+    districtedPlz = allocateDistricts(model, k)
+
+    df_Border["district"] = None
+    for index, row in df_Border.iterrows():
+        for district, plz in districtedPlz.items():
+            if row["plz"] in plz:
+                d = district
+                break
+        df_Border.at[index, "district"] = d
+
+    fig, ax = plt.subplots()
+    ax.set_aspect('equal')
+    print(df_Border)
+    df_Border.plot(column = "district", legend = True, label='Border', ax=ax)
+    plt.axis('off')
+    plt.show()
+
+def allocateDistricts(model, k):
+    districtedPlz = {d: [] for d in range(k)}
+    for item in model.getVars():
+        if abs(item.x) == 1:
+            districtedPlz[int(item.VarName.split('_')[-1])].append(int(item.VarName.split('_')[1]))
+    return districtedPlz
 
 if __name__ == "__main__":
 
@@ -72,9 +94,12 @@ if __name__ == "__main__":
     csv_zuordnung  = "data/zuordnung_plz_ort.csv"
 
     df_Border, df_Center = extractdata.getPolititcalDistrictData(shp_file_centeroid, shp_file, csv_zuordnung)
-    plotMap(df_Border, df_Center)
+    #plotMap(df_Border, df_Center)
 
     # Matthias
-    #  G = createGraph(df_Border)
-    #solve(G, 2, 290000)
-    #  plotGraph(G, df_Center)
+    k = 3
+    req_p = 340000
+    G = createGraph(df_Border)
+    model = politicaldistricting.solve(G, k, req_p)
+    #plotGraph(G, df_Center)
+    plotDistricts(model, k, df_Border)
