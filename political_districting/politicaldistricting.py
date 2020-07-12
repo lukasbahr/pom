@@ -1,84 +1,60 @@
-from gurobipy import GRB, Model, quicksum
-from itertools import product
+import extractdata
+import helperfunctions
 import networkx as nx
-
+import itertools
+from gurobipy import *
 
 def solve(G, k, req_p):
-    D = range(k)  # Districts
-    V = list(G.nodes)  # Postcodes
-    p = {}  # population of each postcode
-    for a, k in G.nodes.data():
-        p[a] = k['population']
-
-    model = Model("political_districting")
+    #pass
+    #Initialize Model
+    model = Model("Political Districting")
     model.params.LazyConstraints = 1
 
     x = {}
-    for plz in V:
-        for d in D:
-            x[plz, d] = model.addVar(vtype=GRB.BINARY, name="x_%s_%s" % (plz, d))
+    #Set Variables:
+    for plz in list(G.nodes):
+        for district in range(k):
+            x[plz, district] = model.addVar(vtype = GRB.BINARY, name="x_%s_%s" % (plz, district))
 
-    # every plz has to be assigned to exactly one district
-    for plz in V:
-        model.addConstr(quicksum(x[plz, d] for d in D) == 1)
+    model.update()
 
-    # the total population of each district d may not deviate from the required population per district by more than 15%
-    for d in D:
-        model.addConstr(quicksum(p[plz] * x[plz, d] for plz in V) >= (1 - 0.15) * req_p)
-        model.addConstr(quicksum(p[plz] * x[plz, d] for plz in V) <= (1 + 0.15) * req_p)
+    #Set Constraints
+    #Each postcode must be part of exactly one district
+    for plz in list(G.nodes):
+            model.addConstr(quicksum(x[plz, district] for district in range(k)) == 1 )
 
-    # callback: continuity requirement
+    #Each electoral district must comprise approximately the same number of people
+    for district in range(k):
+        model.addConstr(quicksum(x[plz, district]*G.nodes[plz]['population'] for plz in list(G.nodes())) <= 1.15 * req_p)
+        model.addConstr(quicksum(x[plz, district]*G.nodes[plz]['population'] for plz in list(G.nodes())) >= 0.85 * req_p)
+
+# callback: continuity requirement
     def callback(model, where):
         if where == GRB.Callback.MIPSOL:
+            #Import current values for x
             rel = model.cbGetSolution(x)
-            for d in D:
-                rel_d = [plz for plz in V if round(rel[plz, d]) == 1]
+
+            for district in range(k):
+                #extract nodes assigned to a district
+                assignedNodes = [plz for plz in list(G.nodes()) if round(rel[plz, district]) == 1]
                 # check whether the current solution yields exactly one component of the graph
-                G_d = nx.subgraph(G, rel_d)
-                components = list(nx.connected_components(G_d))
-                if len(components) > 1:
+                H = nx.subgraph(G, assignedNodes)
+                components = list(nx.connected_components(H))
+                if len(components) >= 2:
                     a = list(components[0])[0]
                     b = list(components[1])[0]
 
                     # calculate subset of minimal ab separators
+
                     paths = [path[1:-1] for path in nx.node_disjoint_paths(G, a, b)]
-                    for sep in product(*paths):
-                        if not any(plz in rel_d for plz in sep):
-                            model.cbLazy(x[a, d] + x[b, d] - quicksum(x[plz, d] for plz in sep) <= 1)
+                    for seperator in itertools.product(*paths):
+                        if not any(plz in assignedNodes for plz in seperator):
+                            model.cbLazy(x[a, district] + x[b, district] - quicksum(x[plz, district] for plz in seperator) <= 1)
                             return None
 
     model.optimize(callback)
 
     return model
-# import extractdata
-# import helperfunctions
-# import networkx as nx
-# from gurobipy import *
-
-# def solve(G, k, req_p):
-#     #pass
-#     #Initialize Model
-#     model = Model("Political Districting")
-#     model.params.LazyConstraints = 1
-
-#     x = {}
-#     #Set Variables:
-#     for plz in list(G.nodes):
-#         for district in range(k):
-#             x[plz, district] = model.addVar(vtype = GRB.BINARY, name="x_%s_%s" % (plz, district))
-
-#     model.update()
-
-#     #Set Constraints
-#     #Each postcode must be part of exactly one district
-#     for plz in list(G.nodes):
-#             model.addConstr(quicksum(x[plz, district] for district in range(k)) == 1 )
-
-#     #Each electoral district must comprise approximately the same number of people
-#     for district in range(k):
-#         model.addConstr(quicksum(x[plz, district]*G.nodes[plz]['population'] for plz in list(G.nodes())) <= 1.15 * req_p)
-#         model.addConstr(quicksum(x[plz, district]*G.nodes[plz]['population'] for plz in list(G.nodes())) >= 0.85 * req_p)
-
 
 #     def cb_sep_violation(model, where):
 #         if where == GRB.Callback.MIPSOL:
