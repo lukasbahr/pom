@@ -34,26 +34,10 @@ def solve(G, k, req_p):
             rel = model.cbGetSolution(x)
             for district in range(k):
                 assignedNodes = [node for node in list(G.nodes) if round(rel[node, district]) == 1]
-                hallo = []
-                for y in assignedNodes:
-                    for r in assignedNodes:
-                        if G.has_edge(y,r):
-                            hallo.append((y,r))
-                        if G.has_edge(r,y):
-                            hallo.append((r,y))
-
-                # V = nx.Graph()
-                # V.add_nodes_from(assignedNodes)
-                # V.add_edges_from(hallo)
-                # G_copy = nx.Graph()
-                # G_copy.add_nodes_from(list(G.nodes())
-                
 
                 G_copy = G.copy()
                 H = nx.subgraph(G, assignedNodes)
-                comp = list(reversed(sorted(list(nx.connected_components(H)), key=len)))
-                if district == 0:
-                    print(comp)
+                comp = list(nx.connected_components(H))
                 if len(comp) >= 2:
                     C_i = list(comp[0])
                     C_j = list(comp[1])
@@ -77,21 +61,15 @@ def solve(G, k, req_p):
                             if G_copy.has_edge(l,i):
                                 G_copy.remove_edge(l,i)
 
-                    j = C_j[-1]
-                    i = C_i[-1]
-                    # R_j = nx.bfs_edges(G_copy,j)
-                    # R_j = [j] + [v for u, v in R_j]
+                    j = C_j[0]
+                    i = C_i[0]
+
                     R_j = nx.node_connected_component(G_copy, j)
-                    #print(R_j)
 
                     intersection = list(set(A_C_i) & set(R_j))
-                    #print(intersection)
-                    #for r in C_i:
-                    #    for s in C_j:
-                    #if not any(plz in assignedNodes for plz in intersection):
-                    model.cbLazy(x[i, district] + x[j, district] - quicksum(x[plz,district] for plz in intersection) <= 1)
+                    if not any(plz in assignedNodes for plz in intersection):
+                        model.cbLazy(x[i, district] + x[j, district] - quicksum(x[plz,district] for plz in intersection) <= 1)
 
-    #model.write('model.lp')
     model.optimize(cb_sep_violation)
 
     return model
