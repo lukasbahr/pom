@@ -95,17 +95,8 @@ def plotDistricts(model, k, df_Border):
 
     """
     df_Border = findSharedBorders(df_Border)
-    # Find the plz for the districts
-    districtedPlz = allocateDistricts(model, k)
-
-    # Add district value to corresponding plz in df_Border
-    df_Border["district"] = None
-    for index, row in df_Border.iterrows():
-        for district, plz in districtedPlz.items():
-            if row["plz"] in plz:
-                d = district
-                break
-        df_Border.at[index, "district"] = d
+    # Find the PLZs for the districts
+    df_Border = allocateDistricts(model, k, df_Border)
 
     fig, ax = plt.subplots()
     ax.set_aspect('equal')
@@ -116,7 +107,7 @@ def plotDistricts(model, k, df_Border):
     plt.show()
 
 
-def allocateDistricts(model, k):
+def allocateDistricts(model, k, df_Border):
     """
     Return hash map with keys of districts and plz as values based on the
     model.
@@ -127,7 +118,30 @@ def allocateDistricts(model, k):
         if abs(item.x) == 1:
             districtedPlz[int(item.VarName.split('_')[-1])].append(int(item.VarName.split('_')[1]))
 
-    return districtedPlz
+    df_Border["district"] = None
+    for index, row in df_Border.iterrows():
+        for district, plz in districtedPlz.items():
+            if row["plz"] in plz:
+                d = district
+                break
+        df_Border.at[index, "district"] = d
+
+    return df_Border
+
+def printDistricts(model, k, df_Border):
+
+    print(df_Border)
+    districts = {k: dict(Population = 0, Towns = [], ) for k in range(k)}
+    for index, row in df_Border.iterrows():
+        districts[row["district"]]["Population"] += row["einwohner"]
+        districts[row["district"]]["Towns"].append(row["note"])
+    for k in districts:
+        print("")
+        print("District %s" % (k+1))
+        print("Population: %s" % (districts[k]['Population']))
+        print("Towns and Villages:")
+        print(*districts[k]['Towns'], sep = ", ")
+        print("")
 
 
 if __name__ == "__main__":
@@ -143,7 +157,8 @@ if __name__ == "__main__":
     k = 3
     req_p = 340000
     G = createGraph(df_Border)
-    #  model = politicaldistricting.solve(G, k, req_p)
-    plotMap(df_Center, df_Border)
+    model = politicaldistricting.solve(G, k, req_p)
+    #plotMap(df_Center, df_Border)
     #  plotGraph(G, df_Center)
-    #  plotDistricts(model, k, df_Border)
+    plotDistricts(model, k, df_Border)
+    printDistricts(model, k, df_Border)

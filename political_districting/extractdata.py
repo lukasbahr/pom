@@ -39,7 +39,7 @@ def dropPLZ(path, drop_plz):
     # Drop all not necessary plz
     df.drop(df[~df['plz'].str.contains('|'.join(str(x) for x in
         drop_plz))].index, axis=0, inplace=True)
-    df.drop(['note'], axis=1, inplace = True)
+    #df.drop(['note'], axis=1, inplace = True)
     df['plz'] = df['plz'].astype(int)
 
     return df
