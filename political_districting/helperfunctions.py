@@ -1,5 +1,5 @@
 import extractdata
-import politicaldistricting_m
+import politicaldistricting
 import pandas as pd
 import matplotlib.pyplot as plt
 import geopandas as gpd
@@ -157,7 +157,7 @@ if __name__ == "__main__":
     k = 3
     req_p = 340000
     G = createGraph(df_Border)
-    model = politicaldistricting_m.solve(G, k, req_p)
+    model = politicaldistricting.solve(G, k, req_p)
     #plotMap(df_Center, df_Border)
     #  plotGraph(G, df_Center)
     plotDistricts(model, k, df_Border)

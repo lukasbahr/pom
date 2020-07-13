@@ -1,5 +1,3 @@
-import extractdata
-import helperfunctions
 import networkx as nx
 from gurobipy import *
 
@@ -8,7 +6,6 @@ def solve(G, k, req_p):
     #Initialize Model
     model = Model("Political Districting")
     model.params.LazyConstraints = 1
-    model.params.MIPGap = 5
 
     x = {}
     #Set Variables:
